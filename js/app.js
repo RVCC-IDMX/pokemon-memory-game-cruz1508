@@ -146,7 +146,6 @@ function shuffleArray(array) {
   return arrayCopy;
 }
 
-
 /**
  * Assign a Pokemon to a card
  * @param {HTMLElement} card - Card element
@@ -229,11 +228,8 @@ function assignPokemonToCard(card, pokemon) {
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Event | MDN: Event}
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/classList | MDN: classList}
  */
-// TODO: Add state tracking variables using meaningful names
-// Use let for variables that will change
 let firstSelectedCard = null;
 let secondSelectedCard = null;
-// Flag to prevent interaction during card processing
 let isProcessingPair = false;
 
 function handleCardClick(event) {
@@ -265,7 +261,70 @@ function handleCardClick(event) {
   } else if (!secondSelectedCard && card !== firstSelectedCard) {
     secondSelectedCard = card;
     isProcessingPair = true;
+    checkForMatch();
   }
+}
+
+function checkForMatch() {
+  // Get Pokémon data from both cards with error handling
+  let firstPokemonData, secondPokemonData;
+
+  try {
+    firstPokemonData = JSON.parse(firstSelectedCard.dataset.pokemon);
+    secondPokemonData = JSON.parse(secondSelectedCard.dataset.pokemon);
+  } catch (error) {
+    console.error('Error parsing Pokémon data:', error);
+    resetSelection();
+    return;
+  }
+
+  // Guard clause if either data is missing
+  if (!firstPokemonData || !secondPokemonData) {
+    console.error('Missing Pokémon data');
+    resetSelection();
+    return;
+  }
+
+  // TODO: Compare Pokémon and handle match/non-match cases
+  // Use a constant time comparison with strict equality
+  // Your code here to compare Pokémon IDs and handle the result
+  if (firstPokemonData.id === secondPokemonData.id) {
+    handleMatch();
+  } else {
+    handleNonMatch();
+  }
+}
+
+// TODO: Implement match handling
+function handleMatch() {
+  firstSelectedCard.classList.add('matched');
+  secondSelectedCard.classList.add('matched');
+
+  resetSelection();
+}
+
+// TODO: Implement non-match handling
+function handleNonMatch() {
+  isProcessingPair = true;
+
+  return new Promise(resolve => {
+    setTimeout(() => {
+      firstSelectedCard.classList.remove('flipped');
+      secondSelectedCard.classList.remove('flipped');
+
+      resetSelection();
+      isProcessingPair = false;
+
+      resolve();
+    }, 1000);
+  });
+}
+
+// TODO: Implement selection reset
+function resetSelection() {
+  firstSelectedCard = null;
+  secondSelectedCard = null;
+  isProcessingPair = false;
 }
 /**
  * Set up event listeners
