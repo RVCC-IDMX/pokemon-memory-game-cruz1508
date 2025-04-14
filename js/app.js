@@ -300,8 +300,46 @@ function handleMatch() {
   firstSelectedCard.classList.add('matched');
   secondSelectedCard.classList.add('matched');
 
+
+
+  // Check if the game is complete
+  checkGameCompletion();
+
   resetSelection();
 }
+
+function checkGameCompletion() {
+  const matchedCards = document.querySelectorAll('.card.matched');
+  if (matchedCards.length === CARD_COUNT) {
+    showGameComplete();
+  }
+}
+
+function showGameComplete() {
+  const messageContainer = document.createElement('div');
+  messageContainer.classList.add('completion-message');
+
+  messageContainer.innerHTML = `
+    <h2> Congratulations! </h2>
+    <p>You found all the Pokémon pairs!</p>
+    <button id="play-again">Play Again</button>
+  `;
+
+  document.querySelector('.container').appendChild(messageContainer);
+
+  document.getElementById('play-again').addEventListener('click', () => {
+    messageContainer.remove();
+    resetGame();
+  });
+}
+
+function resetGame() {
+  location.reload();
+}
+
+
+
+
 
 // TODO: Implement non-match handling
 function handleNonMatch() {
