@@ -111,22 +111,41 @@ function createCardElement(index) {
  */
 async function fetchAndAssignPokemon() {
   try {
-    // Fetch multiple random Pokemon
-    const pokemonList = await PokemonService.fetchMultipleRandomPokemon(CARD_COUNT);
+    // TODO: Fetch 6 Pokémon instead of 12
+    const pokemonList = await PokemonService.fetchMultipleRandomPokemon(6);
 
-    // If debug flag is on, add artificial delay to show the spinner
-    if (DEBUG_SHOW_SPINNER) {
-      await new Promise(resolve => setTimeout(resolve, LOADING_DELAY));
-    }
+    // TODO: Create pairs by duplicating each Pokémon
+    // Use a more functional approach with map and spread operator
 
-    // Assign Pokemon to cards
-    for (let i = 0; i < CARD_COUNT; i++) {
-      assignPokemonToCard(cards[i], pokemonList[i]);
+    const pokemonPairs = pokemonList.flatMap(pokemon => [pokemon, { ...pokemon }]);
+
+
+    // TODO: Shuffle the pairs
+    const shuffledPairs = shuffleArray(pokemonPairs);
+
+    // Assign Pokémon to cards - use a more robust approach with error checking
+    for (let i = 0; i < Math.min(CARD_COUNT, shuffledPairs.length); i++) {
+      if (cards[i] && shuffledPairs[i]) {
+        assignPokemonToCard(cards[i], shuffledPairs[i]);
+      }
     }
   } catch (error) {
     console.error('Error fetching and assigning Pokemon:', error);
+    // Consider adding user-friendly error handling here
+    showErrorMessage('Failed to load Pokémon. Please try refreshing the page.');
   }
 }
+
+// TODO: Implement a shuffle function
+function shuffleArray(array) {
+  const arrayCopy = structuredClone(array);
+  for (let i = arrayCopy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arrayCopy[i], arrayCopy[j]] = [arrayCopy[j], arrayCopy[i]];
+  }
+  return arrayCopy;
+}
+
 
 /**
  * Assign a Pokemon to a card
@@ -210,21 +229,44 @@ function assignPokemonToCard(card, pokemon) {
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Event | MDN: Event}
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/classList | MDN: classList}
  */
+// TODO: Add state tracking variables using meaningful names
+// Use let for variables that will change
+let firstSelectedCard = null;
+let secondSelectedCard = null;
+// Flag to prevent interaction during card processing
+let isProcessingPair = false;
+
 function handleCardClick(event) {
-  // Find the clicked card
-  let card = event.target;
-  while (card && !card.classList.contains('card')) {
-    card = card.parentElement;
+  // Find the clicked card using closest for better performance and readability
+  const card = event.target.closest('.card');
+
+  // Early return pattern for better readability
+  if (!card) {
+    return; // Not a card or child of card
   }
 
-  if (!card) {
+  // TODO: Add selection logic
+  // Guard clauses for better readability
+  if (card.classList.contains('flipped') || card.classList.contains('matched')) {
+    return; // Already flipped or matched
+  }
+
+  // Check if we're currently processing a pair (prevent clicking during timeout)
+  if (isProcessingPair) {
     return;
   }
 
-  // Toggle card flip
-  card.classList.toggle('flipped');
-}
+  // Flip the card
+  card.classList.add('flipped');
 
+  // TODO: Implement selection tracking
+  if (!firstSelectedCard) {
+    firstSelectedCard = card;
+  } else if (!secondSelectedCard && card !== firstSelectedCard) {
+    secondSelectedCard = card;
+    isProcessingPair = true;
+  }
+}
 /**
  * Set up event listeners
  *
